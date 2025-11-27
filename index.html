@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulateur de rémunération</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+  /* Palette principale Challenges-like */
+  --primary: #e84527;              /* Rouge éditorial premium */
+  --primary-dark: #c63a21;         /* Rouge sombre */
+  --primary-light: #fce8e4;        /* Rose/calcaire très léger */
+
+  /* Fond et ambiances premium */
+  --bg: #faf7f5;                   /* Ton crème très léger, premium */
+  --card-bg: #ffffff;
+  --border: #eadfdb;               /* Bordure beige rosée */
+
+  /* Texte edit-style */
+  --text-main: #2a1a17;            /* Brun sombre, lisible, élégant */
+  --text-muted: #7a6460;           /* Gris chaud */
+
+  /* État & accents */
+  --success: #18794e;
+  --danger: #b4231a;
+
+  /* Rayons et effets */
+  --radius: 12px;
+}
+
+select:invalid {
+  color: var(--text-muted);   /* gris clair */
+  opacity: 0.6;               /* encore moins visible */
+}
+
+input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+select:disabled {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 16px 48px;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 1.9rem;
+      letter-spacing: -0.03em;
+      text-align: center;
+      
+    }
+
+    header p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 24px 26px;
+  border: 1px solid var(--border);
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+
+    .card h2 {
+  margin: 0 0 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 1.3rem;
+  color: var(--text-main);
+}
+
+
+    .card h2 span.badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: #e84527;
+      color: #ffffff;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .card p.subtitle {
+      margin: 0 0 16px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 14px;
+    }
+
+    @media (max-width: 700px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.9rem;
+    }
+
+    label {
+      font-weight: 500;
+    }
+
+    label span.hint {
+      font-weight: 400;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-left: 4px;
+    }
+
+    select,
+input[type="number"] {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+select:focus,
+input[type="number"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(232, 69, 39, 0.22);
+}
+
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+   button {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  box-shadow: 0 4px 14px rgba(232, 69, 39, 0.22);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(232, 69, 39, 0.28);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(232, 69, 39, 0.18);
+}
+
+button.secondary {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  box-shadow: none;
+}
+
+
+    .helper {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      align-items: baseline;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+.pill {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.pill.positive {
+  background: #e3f5eb;
+  color: var(--success);
+}
+
+.pill.negative {
+  background: #fde8e5;
+  color: var(--danger);
+}
+
+.pill.neutral {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+
+    .result-summary {
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .result-summary span.highlight {
+      font-weight: 600;
+    }
+
+    .result-diff {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      padding: 10px 10px 9px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .legend {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .legend span.dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      margin-right: 4px;
+    }
+
+    .dot.decile {
+      background: #6b7280;
+    }
+
+    .dot.user {
+      background: #1d4ed8;
+    }
+
+    .empty-state {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: #f9fafb;
+    }
+
+    .badge-small {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #fce8e4;
+      color: #c63a21;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Votre salaire est-il au niveau du marché ?</h1>
+      <p>
+        <br>Pour le savoir, sélectionnez votre fonction et le critère sur lequel vous voulez vous comparer, puis renseignez votre salaire annuel brut.
+      </p>
+    </header>
+
+    <div class="layout">
+      <!-- Bloc formulaire -->
+      <section class="card">
+        <h2>
+          Votre profil
+          <span class="badge">Étape&nbsp;1</span>
+        </h2>
+        
+
+        <form id="salary-form">
+          <div class="form-group full-width">
+            <label for="fonction">Je travaille dans la fonction...</label>
+            <select id="fonction" required>
+              <option value="">Sélectionnez une fonction…</option>
+              <!-- Options générées en JS -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="critere">Je veux comparer mon salaire selon...</label>
+            <select id="critere" required>
+              <option value="">Sélectionnez un critère…</option>
+              <option value="Tous les âges (comparaison globale)">Tous les âges (comparaison globale)</option>
+              <option value="Mon âge">Mon âge</option>
+              <option value="Mon niveau de responsabilité hiérarchique">Mon niveau de responsabilité hiérarchique</option>
+              <option value="Ma responsabilité dans la gestion de budget">Ma responsabilité dans la gestion de budget</option>
+              <option value="Mon lieu de travail">Mon lieu de travail</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="categorie">Valeur du critère
+              <span class="hint"></span>
+            </label>
+            <select id="categorie" required disabled>
+              <option value="">Choisissez d’abord un critère…</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="salaire">
+              Mon salaire annuel brut (€) est de...
+              <span class="hint">(fixe + primes garanties, hors intéressement/participation)</span>
+            </label>
+            <input
+              type="number"
+              id="salaire"
+              min="0"
+              step="500"
+              placeholder="Ex. 42000"
+              required
+            >
+            <div class="helper">
+              Montant brut annuel avant impôts, sur 12 ou 13 mois (peu importe).
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <div class="actions">
+              <button type="submit">
+                Comparer mon profil
+                <span aria-hidden="true">→</span>
+              </button>
+              <button type="button" id="reset-btn" class="secondary">
+                Réinitialiser
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Bloc résultats -->
+      <section class="card">
+        <h2>
+          Résultats
+          <span class="badge">Étape&nbsp;2</span>
+        </h2>
+
+        <div id="results">
+          <div class="empty-state">
+            Renseignez votre fonction, un critère de comparaison et votre salaire, puis cliquez sur
+            <strong>«&nbsp;Comparer mon profil&nbsp;»</strong> pour afficher les résultats.
+          </div>
+        </div>
+
+        <div class="legend" id="legend" style="display: none; margin-top: 8px;">
+          
+          <div class="badge-small">
+            🚨 Estimation d'après les données du baromètre des rémunérations 2025 - Apec
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    /* --------------------------------------------------------------------
+     * Données réelles issues de votre fichier Excel
+     * (1er décile, médiane, 9e décile) en K€.
+     * ------------------------------------------------------------------ */
+    const salaryData = [
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 39.000,
+    median: 58.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 36.725,
+    median: 49.100,
+    d9: 72.000
+  },
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 39.000,
+    median: 57.000,
+    d9: 90.000
+  },
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 40.000,
+    median: 62.000,
+    d9: 110.000
+  },
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 39.000,
+    median: 60.000,
+    d9: 105.000
+  },
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 38.000,
+    median: 54.500,
+    d9: 88.500
+  },
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 40.000,
+    median: 62.000,
+    d9: 110.000
+  },
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 38.000,
+    median: 55.000,
+    d9: 90.500
+  },
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 41.000,
+    median: 62.000,
+    d9: 115.000
+  },
+  {
+    fonction: 'Commercial, commerce, ventes',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 38.000,
+    median: 55.000,
+    d9: 90.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 40.000,
+    median: 60.000,
+    d9: 110.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 34.500,
+    median: 45.000,
+    d9: 65.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 44.000,
+    median: 62.000,
+    d9: 96.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 48.000,
+    median: 75.000,
+    d9: 130.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 42.000,
+    median: 65.000,
+    d9: 115.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 37.000,
+    median: 49.000,
+    d9: 73.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 45.000,
+    median: 70.200,
+    d9: 120.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 38.600,
+    median: 53.000,
+    d9: 80.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 46.000,
+    median: 69.000,
+    d9: 120.000
+  },
+  {
+    fonction: 'Marketing, stratégie clients et produits',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 52.000,
+    median: 86.000,
+    d9: 150.000
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 33.099,
+    median: 48.000,
+    d9: 79.578
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 32.000,
+    median: 42.000,
+    d9: 61.000
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 32.500,
+    median: 47.000,
+    d9: 80.000
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 32.000,
+    median: 43.000,
+    d9: 69.000
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 33.099,
+    median: 48.000,
+    d9: 79.578
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 32.000,
+    median: 42.000,
+    d9: 61.000
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 32.500,
+    median: 47.000,
+    d9: 80.000
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 32.000,
+    median: 43.000,
+    d9: 69.000
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 33.100,
+    median: 45.000,
+    d9: 72.000
+  },
+  {
+    fonction: 'Communication, création et culture',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 30.000,
+    median: 42.100,
+    d9: 67.000
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 75.000,
+    median: 120.000,
+    d9: 220.000
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 54.000,
+    median: 76.327,
+    d9: 150.000
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 65.000,
+    median: 120.000,
+    d9: 220.000
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 85.000,
+    median: 158.000,
+    d9: 220.000
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 76.327,
+    median: 150.000,
+    d9: 220.000
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 60.000,
+    median: 100.000,
+    d9: 150.000
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 80.000,
+    median: 131.931,
+    d9: 220.000
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 60.000,
+    median: 96.000,
+    d9: 150.000
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 80.000,
+    median: 130.000,
+    d9: 227.660
+  },
+  {
+    fonction: 'Direction générale',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 60.000,
+    median: 100.000,
+    d9: 173.000
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 30.000,
+    median: 39.000,
+    d9: 54.000
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 30.000,
+    median: 36.000,
+    d9: 48.000
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 31.800,
+    median: 41.000,
+    d9: 54.000
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 30.000,
+    median: 44.000,
+    d9: 54.000
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 35.000,
+    median: 45.000,
+    d9: 60.000
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 30.000,
+    median: 38.000,
+    d9: 51.000
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 35.000,
+    median: 45.000,
+    d9: 60.000
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 30.000,
+    median: 38.000,
+    d9: 53.190
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 30.000,
+    median: 41.000,
+    d9: 55.000
+  },
+  {
+    fonction: 'Support administratif',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 30.000,
+    median: 37.000,
+    d9: 52.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 40.000,
+    median: 55.000,
+    d9: 85.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 36.000,
+    median: 48.000,
+    d9: 65.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 41.000,
+    median: 57.000,
+    d9: 89.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 42.000,
+    median: 62.700,
+    d9: 95.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 43.700,
+    median: 60.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 36.000,
+    median: 45.000,
+    d9: 65.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 43.700,
+    median: 60.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 39.000,
+    median: 52.000,
+    d9: 78.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 46.000,
+    median: 63.000,
+    d9: 96.000
+  },
+  {
+    fonction: 'Gestion comptable et financière',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 37.000,
+    median: 49.000,
+    d9: 76.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 36.000,
+    median: 48.000,
+    d9: 75.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 33.000,
+    median: 40.000,
+    d9: 60.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 37.000,
+    median: 50.000,
+    d9: 79.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 40.000,
+    median: 58.000,
+    d9: 83.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 43.000,
+    median: 60.000,
+    d9: 92.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 33.000,
+    median: 43.000,
+    d9: 65.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 43.000,
+    median: 60.000,
+    d9: 92.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 34.000,
+    median: 44.000,
+    d9: 70.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 40.000,
+    median: 56.000,
+    d9: 90.000
+  },
+  {
+    fonction: 'Ressources humaines',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 34.000,
+    median: 44.000,
+    d9: 68.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 44.000,
+    median: 62.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 39.000,
+    median: 51.190,
+    d9: 78.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 47.000,
+    median: 67.000,
+    d9: 110.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 60.000,
+    median: 90.000,
+    d9: 120.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 49.000,
+    median: 75.000,
+    d9: 120.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 41.000,
+    median: 54.000,
+    d9: 89.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 49.000,
+    median: 75.000,
+    d9: 120.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 42.000,
+    median: 55.000,
+    d9: 80.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 50.000,
+    median: 70.000,
+    d9: 120.000
+  },
+  {
+    fonction: 'Jurique et fiscal',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 42.000,
+    median: 55.000,
+    d9: 85.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 42.000,
+    median: 55.730,
+    d9: 85.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 39.890,
+    median: 50.000,
+    d9: 75.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 43.000,
+    median: 59.000,
+    d9: 90.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 45.000,
+    median: 63.230,
+    d9: 96.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 46.000,
+    median: 65.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 40.000,
+    median: 52.000,
+    d9: 79.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 45.000,
+    median: 67.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 40.000,
+    median: 52.000,
+    d9: 75.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 45.000,
+    median: 63.000,
+    d9: 96.000
+  },
+  {
+    fonction: 'Gestion de projets, organisation et conseils',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 40.000,
+    median: 52.000,
+    d9: 79.000
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 38.000,
+    median: 52.000,
+    d9: 85.000
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 35.000,
+    median: 46.000,
+    d9: 65.000
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 40.000,
+    median: 55.000,
+    d9: 89.000
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 41.000,
+    median: 60.000,
+    d9: 96.000
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 40.000,
+    median: 60.000,
+    d9: 95.814
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 35.000,
+    median: 46.500,
+    d9: 70.000
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 40.000,
+    median: 59.000,
+    d9: 95.814
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 35.591,
+    median: 49.712,
+    d9: 78.000
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 38.000,
+    median: 55.000,
+    d9: 90.000
+  },
+  {
+    fonction: 'Ingénierie, études, recherche et développement',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 33.048,
+    median: 46.000,
+    d9: 75.000
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 39.379,
+    median: 55.000,
+    d9: 89.000
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 36.600,
+    median: 47.000,
+    d9: 63.500
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 41.000,
+    median: 56.000,
+    d9: 84.500
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 45.000,
+    median: 65.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 44.000,
+    median: 60.000,
+    d9: 98.000
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 36.000,
+    median: 48.000,
+    d9: 73.000
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 43.000,
+    median: 60.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 37.000,
+    median: 50.000,
+    d9: 78.000
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 43.000,
+    median: 60.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Informatique et systèmes d’information',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 36.000,
+    median: 50.000,
+    d9: 80.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 33.000,
+    median: 43.200,
+    d9: 65.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 30.000,
+    median: 38.000,
+    d9: 54.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 34.000,
+    median: 45.000,
+    d9: 70.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 35.000,
+    median: 48.000,
+    d9: 74.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 35.000,
+    median: 49.000,
+    d9: 78.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 30.000,
+    median: 38.000,
+    d9: 54.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 35.000,
+    median: 49.000,
+    d9: 78.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 30.000,
+    median: 38.000,
+    d9: 54.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 36.000,
+    median: 48.000,
+    d9: 74.000
+  },
+  {
+    fonction: 'Production, exploitation, maintenance',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 30.000,
+    median: 40.000,
+    d9: 60.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 40.000,
+    median: 50.000,
+    d9: 80.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 37.000,
+    median: 47.000,
+    d9: 69.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 40.000,
+    median: 52.000,
+    d9: 83.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 45.000,
+    median: 56.000,
+    d9: 89.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 41.000,
+    median: 55.800,
+    d9: 88.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 40.000,
+    median: 47.125,
+    d9: 62.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 43.000,
+    median: 56.000,
+    d9: 85.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 38.000,
+    median: 45.000,
+    d9: 68.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 42.000,
+    median: 55.000,
+    d9: 88.000
+  },
+  {
+    fonction: 'Travaux et chantier',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 38.000,
+    median: 46.000,
+    d9: 72.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 35.000,
+    median: 45.000,
+    d9: 70.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 32.000,
+    median: 40.000,
+    d9: 58.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 36.000,
+    median: 47.000,
+    d9: 72.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 37.000,
+    median: 48.000,
+    d9: 75.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 40.000,
+    median: 52.000,
+    d9: 80.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 33.000,
+    median: 42.000,
+    d9: 63.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 40.000,
+    median: 52.000,
+    d9: 80.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 33.000,
+    median: 42.000,
+    d9: 63.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 37.000,
+    median: 48.000,
+    d9: 76.000
+  },
+  {
+    fonction: 'Logistique, achat, approvisionnement et transport',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 33.000,
+    median: 42.000,
+    d9: 63.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 33.048,
+    median: 47.000,
+    d9: 78.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 30.000,
+    median: 41.000,
+    d9: 62.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 34.000,
+    median: 47.000,
+    d9: 79.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 35.000,
+    median: 50.000,
+    d9: 83.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 37.000,
+    median: 54.000,
+    d9: 86.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 30.000,
+    median: 42.000,
+    d9: 69.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 37.000,
+    median: 54.000,
+    d9: 86.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 31.000,
+    median: 42.000,
+    d9: 68.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 34.000,
+    median: 48.000,
+    d9: 78.000
+  },
+  {
+    fonction: 'Santé, social et médico-social',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 30.000,
+    median: 45.825,
+    d9: 73.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 40.000,
+    median: 60.000,
+    d9: 95.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 35.000,
+    median: 50.000,
+    d9: 65.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 42.000,
+    median: 63.000,
+    d9: 99.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 47.000,
+    median: 70.000,
+    d9: 110.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 45.000,
+    median: 67.000,
+    d9: 110.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 37.000,
+    median: 52.000,
+    d9: 78.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 45.000,
+    median: 67.000,
+    d9: 110.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 37.000,
+    median: 52.000,
+    d9: 78.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 45.000,
+    median: 66.000,
+    d9: 105.000
+  },
+  {
+    fonction: 'Achats',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 37.000,
+    median: 52.000,
+    d9: 80.000
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 38.000,
+    median: 52.000,
+    d9: 82.000
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 34.000,
+    median: 45.000,
+    d9: 69.000
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 38.000,
+    median: 52.000,
+    d9: 83.000
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 42.000,
+    median: 60.000,
+    d9: 94.000
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 42.000,
+    median: 62.000,
+    d9: 105.000
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 35.000,
+    median: 46.000,
+    d9: 70.000
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 42.000,
+    median: 62.000,
+    d9: 105.000
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 38.000,
+    median: 50.000,
+    d9: 74.400
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 41.000,
+    median: 58.000,
+    d9: 100.000
+  },
+  {
+    fonction: 'Qualité et sécurité',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 35.000,
+    median: 48.000,
+    d9: 77.000
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Age',
+    categorie: 'Tous âges',
+    d1: 39.250,
+    median: 53.526,
+    d9: 80.000
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Age',
+    categorie: '< 35 ans',
+    d1: 37.000,
+    median: 50.000,
+    d9: 71.000
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Age',
+    categorie: '35-45 ans',
+    d1: 41.000,
+    median: 55.000,
+    d9: 85.000
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Age',
+    categorie: '> 45 ans',
+    d1: 42.000,
+    median: 60.000,
+    d9: 90.000
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Avec',
+    d1: 40.000,
+    median: 60.000,
+    d9: 92.500
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Responsabilité hiérarchique',
+    categorie: 'Sans',
+    d1: 38.000,
+    median: 49.000,
+    d9: 75.000
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Gestion de budget',
+    categorie: 'Oui',
+    d1: 40.000,
+    median: 60.000,
+    d9: 92.500
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Gestion de budget',
+    categorie: 'Non',
+    d1: 38.000,
+    median: 49.000,
+    d9: 75.000
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Lieu de travail',
+    categorie: 'Ile-de-France',
+    d1: 40.000,
+    median: 60.000,
+    d9: 92.500
+  },
+  {
+    fonction: 'Process, méthodes et planification',
+    type: 'Lieu de travail',
+    categorie: 'Province',
+    d1: 39.250,
+    median: 53.526,
+    d9: 80.000
+  }
+];
+
+    /* --------------------------------------------------------------------
+     * Logique du simulateur
+     * ------------------------------------------------------------------ */
+
+    const form = document.getElementById("salary-form");
+    const fonctionSelect = document.getElementById("fonction");
+    const critereSelect = document.getElementById("critere");
+    const categorieSelect = document.getElementById("categorie");
+    const salaireInput = document.getElementById("salaire");
+    const resultsContainer = document.getElementById("results");
+    const legend = document.getElementById("legend");
+    const resetBtn = document.getElementById("reset-btn");
+
+    const CRITERE_TYPES = {
+      "Tous les âges (comparaison globale)": { type: "Age", mode: "total" },
+      "Mon âge": { type: "Age", mode: "detail" },
+      "Mon niveau de responsabilité hiérarchique": { type: "Responsabilité hiérarchique", mode: "detail" },
+      "Ma responsabilité dans la gestion de budget": { type: "Gestion de budget", mode: "detail" },
+      "Mon lieu de travail": { type: "Lieu de travail", mode: "detail" }
+    };
+
+    function formatEuros(value) {
+      if (value == null || isNaN(value)) return "–";
+      return value.toLocaleString("fr-FR", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }) + " €";
+    }
+
+    function populateFonctions() {
+      const fonctions = new Set(salaryData.map(r => r.fonction));
+      Array.from(fonctions)
+        .sort((a, b) => a.localeCompare(b, "fr"))
+        .forEach(f => {
+          const opt = document.createElement("option");
+          opt.value = f;
+          opt.textContent = f;
+          fonctionSelect.appendChild(opt);
+        });
+    }
+
+    function clearCategorieSelect(placeholder) {
+      categorieSelect.innerHTML = "";
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = placeholder;
+      categorieSelect.appendChild(opt);
+    }
+
+    function updateCategorieOptions() {
+      const fonction = fonctionSelect.value;
+      const critere = critereSelect.value;
+
+      if (!fonction || !critere || !CRITERE_TYPES[critere]) {
+        categorieSelect.disabled = true;
+        clearCategorieSelect("Choisissez d’abord une fonction et un critère…");
+        return;
+      }
+
+      const meta = CRITERE_TYPES[critere];
+
+      if (meta.mode === "total") {
+        // Comparaison "Tous âges" : on verrouille la catégorie
+        categorieSelect.disabled = true;
+        clearCategorieSelect("Tous âges");
+        const opt = categorieSelect.options[0];
+        opt.value = "Tous âges";
+        opt.textContent = "Tous âges";
+        return;
+      }
+
+      const type = meta.type;
+      const candidates = salaryData.filter(
+        r => r.fonction === fonction && r.type === type
+      );
+
+      let categories = new Set(
+        candidates
+          .map(r => r.categorie)
+          .filter(c => !(type === "Age" && c === "Tous âges"))
+      );
+
+      categories = Array.from(categories).sort((a, b) => a.localeCompare(b, "fr"));
+
+      clearCategorieSelect("Sélectionnez une valeur…");
+      categories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        categorieSelect.appendChild(opt);
+      });
+
+      categorieSelect.disabled = false;
+    }
+
+    function buildQualitativeMessage(salaire, d1, median, d9) {
+      if (salaire < d1 * 1000) {
+        return {
+          label: "en dessous du salaire minimum",
+          tone: "negative",
+          text: "Votre rémunération est en dessous du salaire minimum généralement constaté pour votre profil : 90 % des cadres comparables gagnent davantage."
+        };
+      } else if (salaire < median * 1000) {
+        return {
+          label: "en dessous du salaire médian",
+          tone: "negative",
+          text: "Votre rémunération est en dessous du salaire médian généralement constaté pour votre profil."
+        };
+      } else if (salaire <= d9 * 1000) {
+        return {
+          label: "autour ou au-dessus du salaire médian",
+          tone: "positive",
+          text: "Votre rémunération est autour ou au-dessus du salaire médian généralement constaté pour votre profil."
+        };
+      } else {
+        return {
+          label: "au-dessus du salaire maximum",
+          tone: "positive",
+          text: "Votre rémunération est au-dessus du salaire maximum généralement constaté pour votre profil : 90 % des cadres comparables gagnent davantage."
+        };
+      }
+    }
+
+    function renderResults(fonction, critere, categorie, row, salaire) {
+      resultsContainer.innerHTML = "";
+
+      if (!row) {
+        const div = document.createElement("div");
+        div.className = "empty-state";
+        div.innerHTML =
+          "Aucune donnée n'est disponible pour ce profil (fonction + critère). " +
+          "Essayez de changer de critère ou de fonction.";
+        resultsContainer.appendChild(div);
+        legend.style.display = "none";
+        return;
+      }
+
+      legend.style.display = "block";
+
+      const d1 = row.d1;
+      const median = row.median;
+      const d9 = row.d9;
+
+      const qualitative = buildQualitativeMessage(salaire, d1, median, d9);
+      const diff = salaire - median * 1000;
+
+      const resultHeader = document.createElement("div");
+      resultHeader.className = "result-header";
+
+      const title = document.createElement("div");
+      title.innerHTML = `<strong>Votre salaire est</strong>`;
+      resultHeader.appendChild(title);
+
+      const pill = document.createElement("div");
+      pill.className = "pill " + (qualitative.tone === "positive"
+        ? "positive"
+        : qualitative.tone === "negative"
+          ? "negative"
+          : "neutral");
+      pill.textContent = qualitative.label;
+      resultHeader.appendChild(pill);
+
+      const summary = document.createElement("div");
+      summary.className = "result-summary";
+      summary.innerHTML =
+        qualitative.text +
+        ` </span>`;
+
+      const diffDiv = document.createElement("div");
+      diffDiv.className = "result-diff";
+      if (!isNaN(diff)) {
+        const absDiff = Math.abs(diff);
+        if (diff > 0) {
+          diffDiv.innerHTML =
+            `Vous gagnez environ <strong>${formatEuros(absDiff)}</strong> de plus que le salaire moyen pour ce profil.`;
+        } else if (diff < 0) {
+          diffDiv.innerHTML =
+            `Vous gagnez environ <strong>${formatEuros(absDiff)}</strong> de moins que le salaire médian pour ce profil.`;
+        } else {
+          diffDiv.textContent = "Votre salaire est égal au salaire médian pour ce profil (à l’euro près).";
+        }
+      }
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+
+      const statD1 = document.createElement("div");
+      statD1.className = "stat";
+     statD1.innerHTML =
+  `<div class="stat-label">Salaire minimum</div>` +
+  `<div class="stat-value">${formatEuros(d1 * 1000)}</div>`;
+
+
+      const statMedian = document.createElement("div");
+      statMedian.className = "stat";
+      statMedian.innerHTML =
+  `<div class="stat-label">Salaire médian</div>` +
+  `<div class="stat-value">${formatEuros(median * 1000)}</div>`;
+
+      const statD9 = document.createElement("div");
+      statD9.className = "stat";
+     statD9.innerHTML =
+  `<div class="stat-label">Salaire maximum</div>` +
+  `<div class="stat-value">${formatEuros(d9 * 1000)}</div>`;
+
+      grid.appendChild(statD1);
+      grid.appendChild(statMedian);
+      grid.appendChild(statD9);
+
+      resultsContainer.appendChild(resultHeader);
+      resultsContainer.appendChild(summary);
+      resultsContainer.appendChild(diffDiv);
+      resultsContainer.appendChild(grid);
+      resultsContainer.appendChild(profileDiv);
+    }
+
+    // Initialisation
+    populateFonctions();
+
+    fonctionSelect.addEventListener("change", updateCategorieOptions);
+    critereSelect.addEventListener("change", updateCategorieOptions);
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const fonction = fonctionSelect.value;
+      const critere = critereSelect.value;
+      let categorie = categorieSelect.value;
+      const salaire = Number(salaireInput.value);
+
+      if (!fonction || !critere) {
+        alert("Merci de renseigner au minimum la fonction et le critère de comparaison.");
+        return;
+      }
+
+      if (!salaire || salaire <= 0) {
+        alert("Merci de renseigner un salaire annuel brut valide.");
+        return;
+      }
+
+      const meta = CRITERE_TYPES[critere];
+      if (!meta) {
+        alert("Critère de comparaison invalide.");
+        return;
+      }
+
+      let type = meta.type;
+      if (meta.mode === "total") {
+        categorie = "Tous âges";
+      } else {
+        if (!categorie) {
+          alert("Merci de choisir une valeur pour le critère sélectionné.");
+          return;
+        }
+      }
+
+      const row = salaryData.find(
+        r => r.fonction === fonction && r.type === type && r.categorie === categorie
+      );
+
+      renderResults(fonction, critere, categorie, row, salaire);
+    });
+
+    resetBtn.addEventListener("click", function () {
+      form.reset();
+      categorieSelect.disabled = true;
+      clearCategorieSelect("Choisissez d’abord un critère…");
+      resultsContainer.innerHTML = `
+        <div class="empty-state">
+          Renseignez votre fonction, un critère de comparaison et votre salaire à gauche, puis cliquez sur
+          <strong>«&nbsp;Comparer mon profil&nbsp;»</strong> pour afficher les résultats.
+        </div>
+      `;
+      legend.style.display = "none";
+    });
+  </script>
+</body>
+</html>
